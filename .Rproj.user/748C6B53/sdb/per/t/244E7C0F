@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1492727775592.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "244E7C0F",
+    "lastKnownWriteTime" : 0,
+    "last_content_update" : 1492727775592,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "5D2FF5D7",
+        "caption" : "highDiscountCustomers",
+        "contentUrl" : "grid_resource/gridviewer.html?env=_rs_no_env&obj=highDiscountCustomers&cache_key=5D2FF5D7",
+        "displayedObservations" : 0,
+        "environment" : "_rs_no_env",
+        "object" : "highDiscountCustomers",
+        "preview" : 0,
+        "totalObservations" : 0,
+        "variables" : 4
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#ui.R\nrequire(shiny)\nrequire(shinydashboard)\nrequire(DT)\nrequire(leaflet)\nrequire(plotly)\n\ndashboardPage(\n  dashboardHeader(\n  ),\n  dashboardSidebar(\n    sidebarMenu(\n      menuItem(\"Crosstabs, KPIs, Parameters\", tabName = \"crosstab\", icon = icon(\"dashboard\")),\n      menuItem(\"Barcharts, Table Calculations\", tabName = \"barchart\", icon = icon(\"dashboard\"))\n    )\n  ),\n  dashboardBody(    \n    tabItems(\n      # Begin Crosstab tab content.\n      tabItem(tabName = \"crosstab\",\n        tabsetPanel(\n            tabPanel(\"Data\",  \n              radioButtons(\"rb1\", \"Get data from:\",\n                c(\"SQL\" = \"SQL\",\n                  \"CSV\" = \"CSV\"), inline=T),\n              sliderInput(\"KPI1\", \"KPI_Low:\", \n                          min = 0, max = .1,  value = .1),\n              sliderInput(\"KPI2\", \"KPI_Medium:\", \n                          min = .1, max = .2,  value = .2),\n              actionButton(inputId = \"click1\",  label = \"To get data, click here\"),\n              hr(), # Add space after button.\n              DT::dataTableOutput(\"data1\")\n            ),\n            tabPanel(\"Crosstab\", plotOutput(\"plot1\", height=1000))\n          )\n        ),\n      # End Crosstab tab content.\n      # Begin Barchart tab content.\n      tabItem(tabName = \"barchart\",\n        tabsetPanel(\n          tabPanel(\"Data\",  \n             radioButtons(\"rb2\", \"Get data from:\",\n                          c(\"SQL\" = \"SQL\",\n                            \"CSV\" = \"CSV\"), inline=T),\n             uiOutput(\"regions2\"), # See http://shiny.rstudio.com/gallery/dynamic-ui.html\n             actionButton(inputId = \"click2\",  label = \"To get data, click here\"),\n             hr(), # Add space after button.\n             'Here is data for the \"Barchart with Table Calculation\" tab',\n             hr(),\n             DT::dataTableOutput(\"barchartData1\"),\n             hr(),\n             'Here is data for the \"High Discount Orders\" tab',\n             hr(),\n             DT::dataTableOutput(\"barchartData2\"),\n             hr(),\n             'Here is data for the \"High Sales Customers\" tab',\n             hr(),\n             DT::dataTableOutput(\"barchartData3\")\n          ),\n          tabPanel(\"Barchart with Table Calculation\", \"Black = Sum of Sales per Region, Red = Average Sum of Sales per Category, and  Blue = (Sum of Sales per Region - Average Sum of Sales per Category)\", plotOutput(\"barchartPlot1\", height=1500)),\n          tabPanel(\"High Discount Orders\", leafletOutput(\"barchartMap1\"), height=900 ),\n          tabPanel(\"High Sales Customers\", plotlyOutput(\"barchartPlot2\", height=700) )\n        )\n      )\n      # End Barchart tab content.\n    )\n  )\n)\n\n",
+    "created" : 1492727112798.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3757069822",
+    "id" : "5691D404",
+    "lastKnownWriteTime" : 1492551886,
+    "last_content_update" : 1492551886,
+    "path" : "~/DataVisualization/DrCannata/09TableauExamples/ui.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
