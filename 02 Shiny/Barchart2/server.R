@@ -68,8 +68,8 @@ shinyServer(function(input, output) {
         dplyr::summarize(sum_shippingcost = sum(`Shipping Cost`)) # %>% View()
     }
     # The following two lines mimic what can be done with Analytic SQL. Analytic SQL does not currently work in data.world.
-    tdf2 = tdf %>% group_by(Region) %>% summarize(window_avg_shippingcost = mean(sum_shippingcost))
-    dplyr::left_join(tdf, tdf2, by = "Region")
+    tdf2 = tdf %>% group_by(`Sub-Category`) %>% summarize(window_avg_shippingcost = mean(sum_shippingcost))
+    dplyr::left_join(tdf, tdf2, by = "Sub-Category")
     # Analytic SQL would look something like this:
     # select Category, Region, sum_sales, avg(sum_sales) 
     # OVER (PARTITION BY Category ) as window_avg_sales
