@@ -9,7 +9,7 @@ output:
 ---
 
 #**Introduction**
-This is our R Notebook, showing the steps we took to complete Project 5 for CS 329E. This notebook includes step-by-step instructions on how to reproduce our project. To obtain our data, we used data.world. 
+This is our R Notebook, showing the steps we took to complete Project 6 for CS 329E. This notebook includes step-by-step instructions on how to reproduce our project. To obtain our data, we used data.world. 
 
 #**R Configuration**
 Below we display our sessionInfo().
@@ -19,7 +19,7 @@ sessionInfo(package=NULL)
 ```
 
 #**Data Description**
-All data were obtained through esapubs.org. The dataset, Pantheria, contains 100740 lines of biological data for extant and recently extinct mammalian species and was collect over a span of three years. All data came as one textfile, which we edited using Microsoft Excel.
+Found in data.world, a customer based data set that looks at orders and shipments from different markets around the world.
 
 #**Cleaning Data**
 Here's our ETL file to clean our data set.
@@ -32,32 +32,35 @@ source("../01 Data/R_ETL.GlobalShipments.R")
 Cleaned data can be downloaded from Data.world as a .csv file. Because the dataset is so large, we filtered to only show some rows.
 
 Hosting User: jlee</br>
-Database: S17 DV Project 5</br>
+Database: S17 DV Project 6</br>
 Dataset Name: globalshipments.csv
 
-Download Link: https://query.data.world/s/c8ebqjbjswp7vqlzgkgm5mg0g
+Download Link: https://query.data.world/s/d0wreeo0o94v85mxb6790cb21
 
 ```{r}
-source("../01 Data/Accessdataworld5.R")
+source("../01 Data/Accessdataworld6.R")
 ```
 
 #**Tableau / Tableau Action Generated Visualizations**
 **Descriptions:** Refer to visualization captions for individual descriptions.
 
-![](../03 Visualizations/Crosstab 1 .png)<br><br><br>
-![](../03 Visualizations/Crosstab 1 Map.png)<br><br><br>
-![](../03 Visualizations/Crosstab 2 .png)</center>
-![](../03 Visualizations/Crosstab 2 Map.png)</center>
-![](../03 Visualizations/Crosstab 3 .png)</center>
-![](../03 Visualizations/Crosstab 3 Map.png)</center>
+![](../03 Visualizations/TableauBarchart1.png)<br><br><br>
+![](../03 Visualizations/TableauBarchart2.png)<br><br><br>
+
 
 #**Shiny Visualization and Published Application**
-**Description:** A static .png of the Shiny application, as well as a link to the live published version. Crosstab 1 sums up the shipping costs by segment and state. The data is filtered on Country = United States and dislays the IN of Two Highest Shipping Segments.</br> Crosstab 2 breaks down the sum of sales by ship mode and state. The color highlights KPI - Sales per person Low to High. Again, the data is filtered on Country = United States and IN for Two Least Used Shipping Mode. </br>Lastly, Crosstab 3 covers sum of sales by sub-category and country. KPI reflects the profit to sales ratio low to high. The data is filtered on IN for Five Highest Sub-Categories.</br>
+**Description:** A static .png of the Shiny application, as well as a link to the live published version.<br>
+
+Barchart1: Sum of Discount for each Ship Mode broken down by Region. Marks are labeled by Calculated Difference from Average for Discount and sum of Discount. The data is filtered on Country, which keeps United States.<br>
+
+Barchart2: Sum of shipping cost for each Sub-Category broken down by Region. Marks are labeled by Calculated Difference from Average for Shipping Costs and sum of Shipping Cost. The data is filtered on Country, which keeps United States.</br>
 
 Published Link:</br>
-https://frannyfang.shinyapps.io/crosstab1/</br>
-https://frannyfang.shinyapps.io/crosstab2/</br> https://frannyfang.shinyapps.io/Crosstab3/</br>
+https://ehjkim.shinyapps.io/Barchart1/</br>
+https://frannyfang.shinyapps.io/Barchart2/</br>
 
-![](../03 Visualizations/Shiny1.PNG)</center>
-![](../03 Visualizations/Shiny2.PNG)</center>
-![](../03 Visualizations/Shiny3.PNG)</center>
+Barchart1
+![](../03 Visualizations/ShinyBarchart1.PNG)</center>
+
+Barchart2
+![](../03 Visualizations/ShinyBarchart2.PNG)</center>
