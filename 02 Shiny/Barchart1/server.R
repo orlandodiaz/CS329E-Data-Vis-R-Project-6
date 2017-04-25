@@ -30,6 +30,94 @@ region_list <- append(list("All" = "All"), region_list)
 region_list5 <- region_list
 
 
+# The following queries are for the Barcharts -> High Discount Orders tab data.
+# if(online0) {
+  # Step 1:
+  highQuantity <- query(
+    data.world(propsfile = "www/.data.world"),
+    dataset="jlee/s-17-dv-project-6", type="sql",
+    query="
+    SELECT distinct `Order ID`, sum(Profit) as sumProfit
+    from globalshipments
+    where Country in ('United States')
+    group by `Order ID`
+    having sum(Profit) >= 2000"
+  ) # %>% View()
+  # View(highQuantity )
+  
+  # Step 2
+  highQuantityProducts <- query(
+    data.world(propsfile = "www/.data.world"),
+    dataset="jlee/s-17-dv-project-6", type="sql",
+    query="
+    SELECT distinct `Customer Name`, City, State, `Order ID`
+    from globalshipments
+    where Country in ('United States')
+    and `Order ID` in
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    order by `Order ID`",
+    queryParameters = highQuantity$"Order ID"
+  ) # %>% View()
+  # View(highQuantityProducts)
+  
+  # Step 3
+  stateAbreviations <- query(
+    data.world(propsfile = "www/.data.world"),
+    dataset="cannata/superstoreorders", type="sql",
+    query="SELECT distinct name as State, abbreviation as Abbreviation
+    FROM markmarkoh.`us-state-table`.`state_table.csv/state_table`
+    where name in
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    order by name",
+    queryParameters = highQuantityProducts$State
+  ) # %>% View()
+  # View(stateAbreviations )
+  
+  # Step 4
+  highQuantityProducts2 <- inner_join(highQuantityProducts,
+                                      stateAbreviations, by="State") # %>% View()
+  # View(highDiscountCustomers2)
+  
+  # Step 5
+  longLat <- query(
+    data.world(propsfile = "www/.data.world"),
+    dataset="cannata/superstoreorders", type="sql",
+    query="SELECT distinct NAME as City, STATE as Abbreviation,
+    LATITUDE AS Latitude,
+    LONGITUDE AS Longitude
+    FROM bryon.`dhs-city-location-example`.`towns.csv/towns`
+    where NAME in
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    order by NAME",
+    queryParameters = highQuantityProducts$City
+  ) # %>% View()
+  # View(longLat)
+  
+  # Step 6
+  highQuantityProducts2LongLat <- 
+    inner_join(highQuantityProducts2, longLat, by = c("City", "Abbreviation")) 
+  # View(highDiscountCustomers2LongLat)
+  
+  # Step 7
+  Quantity <- 
+    inner_join(highQuantityProducts2LongLat, highQuantity, by="Order ID") # %>% View()
+  # View(discounts)
+# } else {
+#   # Just faking one data point for now.
+#   Customer_Name = 'Wesley Tate'
+#   City = 'Chicago'
+#   State = 'Illinois'
+#   Order_Id = 48452
+#   Abbreviation = 'IL'
+#   Latitude =  41.85003
+#   Longitude = -87.65005
+#   sumDiscount = 0.34
+#   sumSales = 7124
+#   discounts <- data.frame(Customer_Name, City, State, Order_Id, Abbreviation, Latitude, Longitude, sumDiscount, sumSales)
+# }
+# View (Quantity)
+
+
 shinyServer(function(input, output) { 
   # These widgets are for the Barcharts tab.
   online2 = reactive({input$rb2})
@@ -67,6 +155,10 @@ shinyServer(function(input, output) {
                                                          rownames = FALSE,
                                                          extensions = list(Responsive = TRUE, FixedHeader = TRUE) )
   })
+    output$barchartData2 <- renderDataTable({DT::datatable(Quantity,
+                                                           rownames = FALSE,
+                                                           extensions = list(Responsive = TRUE, FixedHeader = TRUE) )
+  })
   output$barchartPlot1 <- renderPlot({ggplot(dfbc1(), aes(x=`Ship Mode`, y=sum_discount)) +
       scale_y_continuous(labels = scales::comma) + # no scientific notation
       theme(axis.text.x=element_text(angle=0, size=12, vjust=0.5)) + 
@@ -80,6 +172,19 @@ shinyServer(function(input, output) {
       # Add reference line with a label.
       geom_hline(aes(yintercept = round(window_avg_discount)), color="red") +
       geom_text(aes( -1, window_avg_discount, label = window_avg_discount, vjust = -.5, hjust = -.25), color="red")
+  })
+  
+  output$barchartMap1 <- renderLeaflet({leaflet(width = 400, height = 800) %>% 
+      setView(lng = -98.35, lat = 39.5, zoom = 4) %>% 
+      addTiles() %>% 
+      addProviderTiles("MapQuestOpen.Aerial") %>%
+      addMarkers(lng = Quantity$Longitude,
+                 lat = Quantity$Latitude,
+                 options = markerOptions(draggable = TRUE, riseOnHover = TRUE),
+                 popup = as.character(paste(Quantity$"Customer Name", 
+                                            ", ", Quantity$City,
+                                            ", ", Quantity$State,
+                                            " Profit: ",",", formatC(as.numeric(Quantity$sumProfit), format="f", digits=2, big.mark=","))) )
   })
   
   })

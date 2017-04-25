@@ -1,6 +1,7 @@
 #ui.R
 require(shiny)
 require(shinydashboard)
+require(leaflet)
 
 dashboardPage(
   dashboardHeader(
@@ -23,9 +24,14 @@ dashboardPage(
                          hr(), # Add space after button.
                          'Here is data for the "Barchart with Table Calculation" tab',
                          hr(),
-                         DT::dataTableOutput("barchartData1")
+                         DT::dataTableOutput("barchartData1"),
+                         hr(),
+                         'Here is data for the "High Quantity Products" tab',
+                         hr(),
+                         DT::dataTableOutput("barchartData2")
                 ),
-                tabPanel("Barchart with Table Calculation", "Black = Sum of Discount per Shipping Mode, Red = Average Sum of Discount per Region, and  Blue = (Sum of Discount per Shipping Mode - Average Sum of Discount per Region)", plotOutput("barchartPlot1", height=1500))
+                tabPanel("Barchart with Table Calculation", "Black = Sum of Shipping Cost per Sub-Category, Red = Average Sum of Shipping Cost per Region, and  Blue = (Sum of Shipping Cost per Sub-Category - Average Sum of Shipping Cost per Region)", plotOutput("barchartPlot1", height=1500)),
+                tabPanel("High Quantity Products", leafletOutput("barchartMap1"), height=900 )
               )
       )
       # End Barchart tab content.

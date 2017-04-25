@@ -1,10 +1,10 @@
 name: Barchart2
-title: Barchart2
+title: Barchart1
 account: frannyfang
 server: shinyapps.io
 appId: 174704
-bundleId: 800819
+bundleId: 802311
 url: https://frannyfang.shinyapps.io/Barchart2/
-when: 1493001884.20765
+when: 1493083067.93465
 asMultiple: FALSE
 asStatic: FALSE
