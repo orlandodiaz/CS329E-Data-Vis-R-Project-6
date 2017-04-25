@@ -43,10 +43,16 @@ source("../01 Data/Accessdataworld6.R")
 
 #**Tableau / Tableau Action Generated Visualizations**
 **Descriptions:** Refer to visualization captions for individual descriptions.
-
+Tableau generated barcharts. </br></br>
 ![](../03 Visualizations/TableauBarchart1.png)<br><br><br>
 ![](../03 Visualizations/TableauBarchart2.png)<br><br><br>
+![](../03 Visualizations/TableauBarchart3.png)<br><br><br>
 
+Tableau generated ID sets.</br></br>
+![](../03 Visualizations/ID Sets on a Map 1.png)<br><br><br>
+![](../03 Visualizations/ID Sets on a Map 2.png)<br><br><br>
+![](../03 Visualizations/ID Sets on a Map 3.png)<br><br><br>
+![](../03 Visualizations/ID Sets on a Map 4.png)<br><br><br>
 
 #**Shiny Visualization and Published Application**
 **Description:** A static .png of the Shiny application, as well as a link to the live published version.<br>
@@ -56,7 +62,7 @@ Barchart1: Sum of Discount for each Ship Mode broken down by Region. Marks are l
 Barchart2: Sum of shipping cost for each Sub-Category broken down by Region. Marks are labeled by Calculated Difference from Average for Shipping Costs and sum of Shipping Cost. The data is filtered on Country, which keeps United States.</br>
 
 Published Link:</br>
-https://ehjkim.shinyapps.io/Barchart1/</br>
+https://frannyfang.shinyapps.io/Barchart1/</br>
 https://frannyfang.shinyapps.io/Barchart2/</br>
 
 Barchart1
