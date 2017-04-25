@@ -61,12 +61,18 @@ Barchart1: Sum of Discount for each Ship Mode broken down by Region. Marks are l
 
 Barchart2: Sum of shipping cost for each Sub-Category broken down by Region. Marks are labeled by Calculated Difference from Average for Shipping Costs and sum of Shipping Cost. The data is filtered on Country, which keeps United States.</br>
 
+Barchart 3: Sum of sales over population for each segment broken down by region. The marks are lebeled by sum([sales]/[population]) and calculated difference for sales over population. The data is filtered on country, which keeps united states.</br>
+
 Published Link:</br>
 https://frannyfang.shinyapps.io/Barchart1/</br>
 https://frannyfang.shinyapps.io/Barchart2/</br>
+https://orlandordiaz.shinyapps.io/Barchart3</br>
 
 Barchart1
 ![](../03 Visualizations/ShinyBarchart1.PNG)</center>
 
 Barchart2
 ![](../03 Visualizations/ShinyBarchart2.PNG)</center>
+
+Barchart3
+![](../03 Visualizations/ShinyBarchart3.PNG)</center>
