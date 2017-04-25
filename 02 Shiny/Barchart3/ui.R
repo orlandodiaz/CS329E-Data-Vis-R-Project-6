@@ -25,7 +25,7 @@ dashboardPage(
                          hr(),
                          DT::dataTableOutput("barchartData1")
                 ),
-                tabPanel("Barchart with Table Calculation", "Black = Sum of Discount per Shipping Mode, Red = Average Sum of Discount per Region, and  Blue = (Sum of Discount per Shipping Mode - Average Sum of Discount per Region)", plotOutput("barchartPlot1", height=1500))
+                tabPanel("Barchart with Table Calculation", "Black = Sum of Sales per Segment, Red = Average Sum of Sales per Region, and  Blue = (Sum of Sales per Segment - Average Sum of Sales per Segment)", plotOutput("barchartPlot1", height=1500))
               )
       )
       # End Barchart tab content.
