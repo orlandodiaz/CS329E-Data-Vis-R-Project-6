@@ -52,28 +52,34 @@ shinyServer(function(input, output) {
       tdf = query(
         data.world(propsfile = "www/.data.world"),
         dataset="jlee/s-17-dv-project-6", type="sql",
-        query="select `Segment`, Region, sum(`Sales`) as sum_sales 
-        from globalshipments
-        where Country in ('United States') and (? = 'All' or Region in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?))
-        group by `Segment`, Region",
+        query="select `Segment`, g.State, 
+        sum(population) as sum_pop, 
+        sum(Sales) as sum_sales, 
+        sum(Sales) / sum(population) as ratio
+    
+
+from globalshipments g join `census-pop-sex` c on g.`Country` = c.`Country`
+where c.`Country` in ('United States') 
+group by `Segment`, g.`State`
+order by `Segment`, g.`State`",
         queryParameters = region_list
       ) # %>% View()
     }
-    else {
-      print("Getting from csv")
-      file_path = "www/globalshipments.csv"
-      df <- readr::read_csv(file_path)
-      tdf = df %>% dplyr::filter(Country == "United States") %>% dplyr::filter(Region %in% input$selectedRegions | input$selectedRegions == "All") %>%
-        dplyr::group_by(Region, `Segment`) %>% 
-        dplyr::summarize(sum_sales = sum(`Sales`)) # %>% View()
-    }
+    # else {
+    #   print("Getting from csv")
+    #   file_path = "www/globalshipments.csv"
+    #   df <- readr::read_csv(file_path)
+    #   tdf = df %>% dplyr::filter(Country == "United States") %>% dplyr::filter(Region %in% input$selectedRegions | input$selectedRegions == "All") %>%
+    #     dplyr::group_by(Region, `Segment`) %>% 
+    #     dplyr::summarize(ratio = sum(`Sales`)) # %>% View()
+    # }
     # The following two lines mimic what can be done with Analytic SQL. Analytic SQL does not currently work in data.world.
-    tdf2 = tdf %>% group_by(Region) %>% summarize(window_avg_sales = mean(sum_sales))
-    dplyr::left_join(tdf, tdf2, by = "Region")
+     tdf2 = tdf %>% group_by(Segment) %>% summarize(window_avg_ratio = mean(ratio))
+     dplyr::left_join(tdf, tdf2, by = "Segment")
     # Analytic SQL would look something like this:
-    # select Category, Region, sum_sales, avg(sum_sales) 
-    # OVER (PARTITION BY Category ) as window_avg_sales
-    # from (select Category, Region, sum(Sales) sum_sales
+    # select Category, Region, ratio, avg(ratio) 
+    # OVER (PARTITION BY Category ) as window_avg_ratio
+    # from (select Category, Region, sum(Sales) ratio
     #       from SuperStoreOrders
     #      group by Category, Region)
   })
@@ -81,19 +87,19 @@ shinyServer(function(input, output) {
                                                          rownames = FALSE,
                                                          extensions = list(Responsive = TRUE, FixedHeader = TRUE) )
   })
-  output$barchartPlot1 <- renderPlot({ggplot(dfbc1(), aes(x=`Segment`, y=sum_sales)) +
+  output$barchartPlot1 <- renderPlot({ggplot(dfbc1(), aes(x=`Segment`, y=ratio)) +
       scale_y_continuous(labels = scales::comma) + # no scientific notation
       theme(axis.text.x=element_text(angle=0, size=12, vjust=0.5)) + 
       theme(axis.text.y=element_text(size=12, hjust=0.5)) +
       geom_bar(stat = "identity") + 
       facet_wrap(~Region, ncol=1) + 
       coord_flip() + 
-      # Add sum_sales, and (sum_sales - window_avg_sales) label.
-      geom_text(mapping=aes(x=`Segment`, y=sum_sales, label=round(sum_sales)),colour="black", hjust=-.5) +
-      geom_text(mapping=aes(x=`Segment`, y=sum_sales, label=round(sum_sales - window_avg_sales)),colour="blue", hjust=-2) +
+      # Add ratio, and (ratio - window_avg_ratio) label.
+      geom_text(mapping=aes(x=`Segment`, y=ratio, label=round(ratio)),colour="black", hjust=-.5) +
+      geom_text(mapping=aes(x=`Segment`, y=ratio, label=round(ratio - window_avg_ratio)),colour="blue", hjust=-2) +
       # Add reference line with a label.
-      geom_hline(aes(yintercept = round(window_avg_sales)), color="red") +
-      geom_text(aes( -1, window_avg_sales, label = window_avg_sales, vjust = -.5, hjust = -.25), color="red")
+      geom_hline(aes(yintercept = round(window_avg_ratio)), color="red") +
+      geom_text(aes( -1, window_avg_ratio, label = window_avg_ratio, vjust = -.5, hjust = -.25), color="red")
   })
   
   })
