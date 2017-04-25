@@ -52,16 +52,16 @@ shinyServer(function(input, output) {
       tdf = query(
         data.world(propsfile = "www/.data.world"),
         dataset="jlee/s-17-dv-project-6", type="sql",
-        query="select `Segment`, g.State, 
+        query="select `Region`, `Segment`, g.State, 
         sum(population) as sum_pop, 
         sum(Sales) as sum_sales, 
         sum(Sales) / sum(population) as ratio
-    
-
-from globalshipments g join `census-pop-sex` c on g.`Country` = c.`Country`
-where c.`Country` in ('United States') 
-group by `Segment`, g.`State`
-order by `Segment`, g.`State`",
+        
+        
+        from globalshipments g join `census-pop-sex` c on g.`Country` = c.`Country`
+        where c.`Country` in ('United States') 
+        group by `Region`, `Segment`, g.`State`
+        order by `Region`, `Segment`, g.`State`",
         queryParameters = region_list
       ) # %>% View()
     }
