@@ -7,127 +7,55 @@ require(data.world)
 require(readr)
 require(DT)
 require(leaflet)
-# 
-# The following query is for the select list in the Barcharts -> Barchart with Table Calculation tab.
-regions = query(
-  data.world(propsfile = "www/.data.world"),
-  dataset="jlee/s-17-dv-project-5", type="sql",
-  query="select distinct Region as D, Region as R
-  from globalshipments
-  order by 1"
-) # %>% View()
-if(regions[1] == "Server error") {
-  print("Getting Regions from csv")
-  file_path = "www/globalshipments.csv"
-  df <- readr::read_csv(file_path)
-  tdf1 = df %>% dplyr::distinct(Region) %>% arrange(Region) %>% dplyr::rename(D = Region)
-  tdf2 = df %>% dplyr::distinct(Region) %>% arrange(Region) %>% dplyr::rename(R = Region)
-  regions = bind_cols(tdf1, tdf2)
-}
+require(plotly)
+require(lubridate)
+
+online0 = TRUE
+
+# The following query is for the select list in the Boxplots -> Simple Boxplot tab, and Barcharts -> Barchart with Table Calculation tab.
+# if(online0) {
+  regions = query(
+    data.world(propsfile = "www/.data.world"),
+    dataset="jlee/s-17-dv-project-6", type="sql",
+    query="select distinct Region as D, Region as R
+    from globalshipments
+    where Country in ('United States')
+    order by 1"
+  ) # %>% View()
+# } else {
+#   print("Getting Regions from csv")
+#   file_path = "www/globalshipments.csv"
+#   df <- readr::read_csv(file_path)
+#   tdf1 = df %>% dplyr::distinct(Region) %>% arrange(Region) %>% dplyr::rename(D = Region)
+#   tdf2 = df %>% dplyr::distinct(Region) %>% arrange(Region) %>% dplyr::rename(R = Region)
+#   regions = bind_cols(tdf1, tdf2)
+# }
+
 region_list <- as.list(regions$D, regions$R)
+
 region_list <- append(list("All" = "All"), region_list)
 
-#The following query is for the select list in the Barcharts -> High Discount Orders tab.
-discounts = query(
-  data.world(propsfile = "www/.data.world"),
-  dataset="jlee/s-17-dv-project-5", type="sql",
-  query="SELECT `Customer Name` as CustomerName, s.City as City, states.abbreviation as State,
-  c.LATITUDE AS Latitude,
-  c.LONGITUDE AS Longitude,
-  `Order ID` as OrderId, sum(Discount) as sumDiscount, sum(Sales)as sumSales
-  FROM globalshipments s join markmarkoh.`us-state-table`.`state_table.csv/state_table` states
-  ON (s.State = states.name AND s.City = c.NAME) join
-  dhs.`cities-and-towns-ntad`.`Cities_and_Towns_NTAD.csv/Cities_and_Towns_NTAD` c
-  ON (states.abbreviation = c.STATE)
-  WHERE Region != 'International'
-  group by `Customer Name`, s.City, states.abbreviation, c.LATITUDE, c.LONGITUDE, `Order ID`
-  having sum(Discount) between .3 and .6"
-)  # %>% View()
+region_list5 <- region_list
 
-# The following query is for the select list in the Barcharts -> High Sales Customers tab.
-sales = query(
-  data.world(propsfile = "www/.data.world"),
-  dataset="jlee/s-17-dv-project-5", type="sql",
-  query="SELECT `Sub-Category` as SubCategory, sum(Profit) as sumProfit, sum(Sales) as SumSales
-  from globalshipments
-  group by `Sub-Category`
-  having sum(Sales) > 950000"
-) # %>% View()
 
 shinyServer(function(input, output) { 
-  # These widgets are for the Crosstabs tab.
-  online1 = reactive({input$rb1})
-  KPI_Low = reactive({input$KPI1})     
-  KPI_Medium = reactive({input$KPI2})
-
   # These widgets are for the Barcharts tab.
   online2 = reactive({input$rb2})
   output$regions2 <- renderUI({selectInput("selectedRegions", "Choose Regions:", region_list, multiple = TRUE, selected='All') })
   
-# Begin Crosstab Tab ------------------------------------------------------------------
-  df1 <- eventReactive(input$click1, {
-      if(online1() == "SQL") {
-        print("Getting from data.world")
-        query(
-            data.world(propsfile = "www/.data.world"),
-            dataset="jlee/s-17-dv-project-5", type="sql",
-            query="select `Sub-Category`, Country, 
-            sum(Profit) as sum_profit, 
-            sum(Sales) as sum_sales, 
-            sum(Profit) / sum(Sales) as ratio,
-            
-            case
-            when sum(Profit) / sum(Sales) < ? then '03 Low'
-            when sum(Profit) / sum(Sales) < ? then '02 Medium'
-            else '01 High'
-            end AS kpi
-            
-            from globalshipments
-            where `Sub-Category` in ('Bookcases', 'Chairs', 'Copiers', 'Phones', 'Storage')
-            group by `Sub-Category`, Country
-            order by `Sub-Category`, Country",
-            queryParameters = list(KPI_Low(), KPI_Medium())
-          ) # %>% View()
-      }
-      else {
-        print("Getting from csv")
-        file_path = "www/globalshipments.csv"
-        df <- readr::read_csv(file_path)
-        df <- dplyr::arrange(df, Country)
-        df %>% dplyr::filter(row_number() <= 10000) %>%
-         # dplyr::filter( `Sub-Category` %in% 
-         #                 c('Accesories','Appliances','Art', 'Phones')) %>%
-          dplyr::group_by(`Sub-Category`, Country) %>% 
-          dplyr::summarize(sum_profit = sum(Profit), sum_sales = sum(Sales),
-                           ratio = sum(Profit) / sum(Sales),
-                           kpi = if_else(ratio <= KPI_Low(), '03 Low',
-                           if_else(ratio <= KPI_Medium(), '02 Medium', '01 High'))) # %>% View()
-      }
-  })
-  output$data1 <- renderDataTable({DT::datatable(df1(), rownames = FALSE,
-                                extensions = list(Responsive = TRUE, FixedHeader = TRUE)
-  )
-  })
-  output$plot1 <- renderPlot({ggplot(df1()) + 
-    theme(axis.text.x=element_text(angle=90, size=16, vjust=0.5)) + 
-    theme(axis.text.y=element_text(size=5, hjust=0.5)) +
-    geom_text(aes(x=`Sub-Category`, y=Country, label=sum_sales), size=3) +
-    geom_tile(aes(x=`Sub-Category`, y=Country, fill=kpi), alpha=0.50)
-  })
-# End Crosstab Tab ___________________________________________________________
-# Begin Barchart Tab ------------------------------------------------------------------
-  df2 <- eventReactive(input$click2, {
+  # Begin Barchart Tab ------------------------------------------------------------------
+  dfbc1 <- eventReactive(input$click2, {
     if(input$selectedRegions == 'All') region_list <- input$selectedRegions
     else region_list <- append(list("Skip" = "Skip"), input$selectedRegions)
     if(online2() == "SQL") {
       print("Getting from data.world")
       tdf = query(
         data.world(propsfile = "www/.data.world"),
-        dataset="jlee/s-17-dv-project-5", type="sql",
-        query="select `Sub-Category`, Region, sum(Sales) sum_sales
-                from globalshipments
-        where ? = 'All' or Region in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        group by `Sub-Category`, Region",
+        dataset="jlee/s-17-dv-project-6", type="sql",
+        query="select `Segment`, Region, sum(`Sales`) as sum_sales 
+        from globalshipments
+        where Country in ('United States') and (? = 'All' or Region in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?))
+        group by `Segment`, Region",
         queryParameters = region_list
       ) # %>% View()
     }
@@ -135,66 +63,37 @@ shinyServer(function(input, output) {
       print("Getting from csv")
       file_path = "www/globalshipments.csv"
       df <- readr::read_csv(file_path)
-      tdf = df %>% dplyr::filter(Region %in% input$selectedRegions | input$selectedRegions == "All") %>%
-        dplyr::group_by(`Sub-Category`, Region) %>%
-        dplyr::summarize(sum_sales = sum(Sales)) # %>% View()
+      tdf = df %>% dplyr::filter(Country == "United States") %>% dplyr::filter(Region %in% input$selectedRegions | input$selectedRegions == "All") %>%
+        dplyr::group_by(Region, `Segment`) %>% 
+        dplyr::summarize(sum_sales = sum(`Sales`)) # %>% View()
     }
     # The following two lines mimic what can be done with Analytic SQL. Analytic SQL does not currently work in data.world.
-    tdf2 = tdf %>% group_by(`Sub-Category`) %>% summarize(window_avg_sales = mean(sum_sales))
-    dplyr::inner_join(tdf, tdf2, by = "Sub-Category")
+    tdf2 = tdf %>% group_by(Region) %>% summarize(window_avg_sales = mean(sum_sales))
+    dplyr::left_join(tdf, tdf2, by = "Region")
     # Analytic SQL would look something like this:
-      # select Category, Region, sum_sales, avg(sum_sales)
-      # OVER (PARTITION BY Category ) as window_avg_sales
-      # from (select Category, Region, sum(Sales) sum_sales
-      #       from SuperStoreOrders
-      #      group by Category, Region)
+    # select Category, Region, sum_sales, avg(sum_sales) 
+    # OVER (PARTITION BY Category ) as window_avg_sales
+    # from (select Category, Region, sum(Sales) sum_sales
+    #       from SuperStoreOrders
+    #      group by Category, Region)
   })
-  output$barchartData1 <- renderDataTable({DT::datatable(df2(),
-                        rownames = FALSE,
-                        extensions = list(Responsive = TRUE, FixedHeader = TRUE) )
+  output$barchartData1 <- renderDataTable({DT::datatable(dfbc1(),
+                                                         rownames = FALSE,
+                                                         extensions = list(Responsive = TRUE, FixedHeader = TRUE) )
   })
-  output$barchartData2 <- renderDataTable({DT::datatable(discounts,
-                        rownames = FALSE,
-                        extensions = list(Responsive = TRUE, FixedHeader = TRUE) )
-  })
-  output$barchartData3 <- renderDataTable({DT::datatable(sales,
-                        rownames = FALSE,
-                        extensions = list(Responsive = TRUE, FixedHeader = TRUE) )
-  })
-  output$barchartPlot1 <- renderPlot({ggplot(df2(), aes(x=Region, y=sum_sales)) +
+  output$barchartPlot1 <- renderPlot({ggplot(dfbc1(), aes(x=`Segment`, y=sum_sales)) +
       scale_y_continuous(labels = scales::comma) + # no scientific notation
-      theme(axis.text.x=element_text(angle=0, size=12, vjust=0.5)) +
+      theme(axis.text.x=element_text(angle=0, size=12, vjust=0.5)) + 
       theme(axis.text.y=element_text(size=12, hjust=0.5)) +
-      geom_bar(stat = "identity") +
-      facet_wrap(~Category, ncol=1) +
-      coord_flip() +
+      geom_bar(stat = "identity") + 
+      facet_wrap(~Region, ncol=1) + 
+      coord_flip() + 
       # Add sum_sales, and (sum_sales - window_avg_sales) label.
-      geom_text(mapping=aes(x=Region, y=sum_sales, label=round(sum_sales)),colour="black", hjust=-.5) +
-      geom_text(mapping=aes(x=Region, y=sum_sales, label=round(sum_sales - window_avg_sales)),colour="blue", hjust=-2) +
+      geom_text(mapping=aes(x=`Segment`, y=sum_sales, label=round(sum_sales)),colour="black", hjust=-.5) +
+      geom_text(mapping=aes(x=`Segment`, y=sum_sales, label=round(sum_sales - window_avg_sales)),colour="blue", hjust=-2) +
       # Add reference line with a label.
       geom_hline(aes(yintercept = round(window_avg_sales)), color="red") +
       geom_text(aes( -1, window_avg_sales, label = window_avg_sales, vjust = -.5, hjust = -.25), color="red")
   })
-
-  output$barchartMap1 <- renderLeaflet({leaflet(width = 400, height = 800) %>%
-    setView(lng = -98.35, lat = 39.5, zoom = 4) %>%
-    addTiles() %>%
-    addProviderTiles("MapQuestOpen.Aerial") %>%
-    addMarkers(lng = discounts$Longitude,
-      lat = discounts$Latitude,
-      options = markerOptions(draggable = TRUE, riseOnHover = TRUE),
-      popup = as.character(paste(discounts$CustomerName,
-          ", ", discounts$City,
-          ", ", discounts$State,
-          " Sales: ","$", formatC(as.numeric(discounts$sumSales), format="f", digits=2, big.mark=","),
-          " Discount: ", ", ", discounts$sumDiscount)) )
+  
   })
-
-  output$barchartPlot2 <- renderPlot({ggplot(sales, aes(x=SubCategory, y=SumSales)) +
-      theme(axis.text.x=element_text(angle=0, size=12, vjust=0.5)) +
-      theme(axis.text.y=element_text(size=12, hjust=0.5)) +
-      geom_bar(stat = "identity")
-  })
-  # End Barchart Tab ___________________________________________________________
-
-})
